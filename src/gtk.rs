@@ -1,173 +1,11 @@
-use futures_util::stream::{StreamExt, StreamFuture};
+use super::{client, Action};
 use gtk4::prelude::*;
 use gtk4::Label;
 use gtk4::{
     Application, ApplicationWindow, Box, Button, EventControllerKey, GLArea,
     HeaderBar, IMContextSimple, InputPurpose, Orientation,
 };
-
-/// An action button.
-///
-/// Action buttons show up in the window titlebar.  At any given moment, the app
-/// can have up to 5 action buttons, so they should be reserved for the most
-/// common actions.
-pub enum Action {
-    /// Toggle open/closed vertical tab sidebar
-    Sidebar,
-    /// Create a new tab (file)
-    New,
-    /// Open tab from file
-    Open,
-    /// Synchronize file with server
-    Sync,
-
-    /// Go back to the first page
-    First,
-    /// Go back a page
-    Backward,
-    /// Go forward a page
-    Forward,
-    /// Go forward to the last page
-    Last,
-    /// Go to the home page
-    Home,
-
-    /// Reset the zoom level to 100%
-    ZoomReset,
-    /// Zoom out
-    ZoomOut,
-    /// Zoom in
-    ZoomIn,
-    /// Zoom to fit the window
-    ZoomFit,
-
-    /// Undo last action
-    Undo,
-    /// Redo last action
-    Redo,
-
-    /// Error Check, Spellcheck, Grammar Check, Counterpoint Check, etc.
-    Check,
-    /// Open Editor
-    Edit,
-    /// Select All
-    Select,
-    /// Copy
-    Copy,
-    /// Cut
-    Cut,
-    /// Paste
-    Paste,
-
-    /// Align Left
-    AlignLeft,
-    /// Align Center
-    AlignCenter,
-    /// Align Right
-    AlignRight,
-    /// Align Clamped (Justified)
-    AlignClamp,
-
-    /// Toggle Bold
-    Bold,
-    /// Toggle Italic
-    Italic,
-    /// Toggle Underlined
-    Underline,
-    /// Toggle Strikethrough
-    Strikethrough,
-
-    /// Outdent
-    Outdent,
-    /// Indent
-    Indent,
-
-    /// Flip object horizontally
-    FlipH,
-    /// Flip object vertically
-    FlipV,
-    /// Rotate object left
-    RotateL,
-    /// Rotate object right
-    RotateR,
-
-    /// Search/Find
-    Search,
-
-    /// Toggle Media Repeat
-    Repeat,
-    /// Shuffle Media
-    Shuffle,
-    /// Previous Media
-    Previous,
-    /// Rewind Media
-    Rewind,
-    /// Stop Media
-    Stop,
-    /// Pause Media
-    Pause,
-    /// Play Media
-    Play,
-    /// Record Media
-    Record,
-    /// Skip Through Media
-    Skip,
-    /// Next Media
-    Next,
-    /// Eject Media
-    Eject,
-
-    /// Insert/Add Image
-    Image,
-    /// Insert/Add Link
-    Link,
-    /// Insert/Add Object
-    Object,
-    /// Insert/Add Text
-    Text,
-
-    /// Edit Document Properties
-    Page,
-
-    /// Use a microphone
-    Microphone,
-    /// Use a webcam/camera
-    Camera,
-    /// Use a printer
-    Printer,
-    /// Use a scanner
-    Scanner,
-    /// Use a gamepad
-    Gamepad,
-
-    /// Jump to a pre-specified location
-    Jump,
-    /// Tag Version or Webpage (Bookmarks and File History)
-    Tags,
-    /// Add an item/page
-    Add,
-    /// Remove an item/page
-    Remove,
-    /// Share a document
-    Share,
-    /// View/Edit Account Details
-    Account,
-    /// View/Edit Settings
-    Settings,
-    /// View Help Page
-    Help,
-    /// Go into fullscreen
-    Fullscreen,
-    /// Leave fullscreen
-    Restore,
-
-    /// Look up something
-    Look,
-    /// Dropdown Menu
-    Menu,
-    /// Exit (like close, but doesn't close the program)
-    Exit,
-}
+use flume::{Sender, Receiver};
 
 fn gtk_icon(action: &Action) -> &str {
     match action {
@@ -259,59 +97,13 @@ fn gtk_icon(action: &Action) -> &str {
     }
 }
 
-/// Messages received by the client.
-#[derive(Debug)]
-enum Event {
-    /// Keyboard Input
-    Key(u32),
-    /// Text Input
-    Text(char),
-}
-
-/// Message sent by the client.
-enum Message {
-    /// When the client requests the program to exit.
-    Exit,
-}
-
-/// Client State
-struct State<'a> {
-    stream: StreamFuture<flume::r#async::RecvStream<'a, Event>>,
-}
-
-// Exit type for State.
-type Exit = ();
-
-impl<'a> State<'a> {
-    fn event(
-        &mut self,
-        (event, stream): (Option<Event>, flume::r#async::RecvStream<'a, Event>),
-    ) -> std::task::Poll<Exit> {
-        dbg!(event);
-        self.stream = stream.into_future();
-        std::task::Poll::Pending
-    }
-}
-
-async fn start(sender: flume::Sender<Message>, recver: flume::Receiver<Event>) {
-    let mut state = State {
-        stream: recver.stream().into_future(),
-    };
-
-    pasts::Loop::new(&mut state)
-        .when(|s| &mut s.stream, State::event)
-        .await;
-
-    sender.send(Message::Exit).unwrap();
-}
-
-fn main() {
-    let (send, client_recv) = flume::bounded(1);
+pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
+    /*let (send, client_recv) = flume::bounded(1);
     let (client_send, recv) = flume::bounded(1);
 
     std::thread::spawn(move || {
-        pasts::block_on(start(client_send, client_recv));
-    });
+        pasts::block_on(client::start(client_send, client_recv));
+    });*/
 
     let application = Application::builder()
         .application_id("com.aldaronlau.gtk-test")
@@ -362,8 +154,6 @@ fn main() {
         let search_bar = gtk4::Entry::builder()
             .buffer(&search_buffer)
             .hexpand(true)
-            //.search_mode_enabled(true)
-            //.show_close_button(true)
             .build();
         header.pack_start(&search);
 
@@ -427,8 +217,6 @@ fn main() {
 
         let column = Box::builder().orientation(Orientation::Vertical).build();
 
-        window.set_child(Some(&column));
-
         let header_fullscreen_internal =
             HeaderBar::builder().show_title_buttons(false).build();
         let header_fullscreen = gtk4::Revealer::builder()
@@ -442,37 +230,53 @@ fn main() {
         header_fullscreen_internal.pack_end(&menu);
 
         let canvas = GLArea::builder()
-            .auto_render(true)
+            /*.auto_render(true)
             .has_depth_buffer(false)
             .use_es(true)
-            .hexpand(true)
+            .hexpand(true)*/
             .vexpand(true)
             .build();
 
-        canvas.connect_render(|canvas, context| {
-            dbg!(canvas.width(), canvas.height());
+        canvas.connect_realize(move |canvas| {
+            canvas.make_current();
+        });
+
+        let win = window.clone();
+        canvas.connect_render(move |canvas, context| {
+            println!("render");
+            // dbg!(canvas.width(), canvas.height());
 
             #[link(name = "GLESv2")]
             extern "C" {
                 fn glClearColor(r: f32, g: f32, b: f32, a: f32);
                 fn glClear(field: std::os::raw::c_uint);
+                fn glFlush();
             }
             unsafe {
-                glClearColor(0.25, 0.25, 0.25, 1.0);
+                glClearColor(0.0, 0.0, 0.0, 1.0); //0.25, 0.25, 0.25, 1.0);
                 glClear(0x00004000);
+                glFlush();
             }
-            gtk4::Inhibit(true)
+
+            gtk4::Inhibit(false)
+        });
+
+        canvas.add_tick_callback(|canvas, frame_clock| {
+            let micros = frame_clock.frame_time();
+            dbg!(micros);
+            canvas.queue_render();
+            glib::source::Continue(true) // Keep running
         });
 
         let keyboard = EventControllerKey::new();
         keyboard.connect_modifiers(|controller, modtype| {
             dbg!(modtype);
-            gtk4::Inhibit(true)
+            gtk4::Inhibit(false)
         });
         keyboard.connect_key_pressed(|controller, keyval, keycode, state| {
             dbg!(keyval.to_unicode());
 
-            gtk4::Inhibit(true)
+            gtk4::Inhibit(false)
         });
         keyboard.connect_key_released(|controller, keyval, keycode, state| {
             dbg!(keyval, keycode, state);
@@ -484,7 +288,6 @@ fn main() {
         header_fullscreen.hide();
 
         let win = window.clone();
-        let col = column.clone();
         let h_f = header_fullscreen.clone();
         restore.connect_clicked(move |f| {
             h_f.hide();
@@ -492,7 +295,6 @@ fn main() {
         });
 
         let win = window.clone();
-        let col = column.clone();
         let h_f = header_fullscreen.clone();
         // FIXME: Enter fullscreen.
         /*fullscreen.connect_clicked(move |f| {
@@ -500,6 +302,7 @@ fn main() {
             win.fullscreen();
         });*/
 
+        window.set_child(Some(&column));
         window.show();
     });
 

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+glib = "0.14"
 gtk4 = "0.2"
 flume = "0.10"
 pasts = "0.8"

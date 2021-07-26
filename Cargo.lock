@@ -427,6 +427,7 @@ version = "0.1.0"
 dependencies = [
  "flume",
  "futures-util",
+ "glib",
  "gtk4",
  "pasts",
 ]
