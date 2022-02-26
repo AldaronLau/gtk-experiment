@@ -130,25 +130,25 @@ pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
 
         let header = HeaderBar::new();
 
-        let tabs = Button::from_icon_name(Some(gtk_icon(&Action::Sidebar)));
+        let tabs = Button::from_icon_name(gtk_icon(&Action::Sidebar));
         header.pack_start(&tabs);
 
-        let sidebar = Button::from_icon_name(Some(gtk_icon(&Action::Backward)));
+        let sidebar = Button::from_icon_name(gtk_icon(&Action::Backward));
         sidebar.connect_clicked(|_| {
             println!("back!");
         });
         header.pack_start(&sidebar);
 
-        let sidebar = Button::from_icon_name(Some(gtk_icon(&Action::Forward)));
+        let sidebar = Button::from_icon_name(gtk_icon(&Action::Forward));
         sidebar.connect_clicked(|_| {
             println!("forward!");
         });
         header.pack_start(&sidebar);
 
-        let new = Button::from_icon_name(Some(gtk_icon(&Action::New)));
+        let new = Button::from_icon_name(gtk_icon(&Action::New));
         header.pack_start(&new);
 
-        let search = Button::from_icon_name(Some(gtk_icon(&Action::Search)));
+        let search = Button::from_icon_name(gtk_icon(&Action::Search));
         let header2 = header.clone();
         let search_buffer = gtk4::EntryBuffer::new(Some("https://url.url"));
         let search_bar = gtk4::Entry::builder()
@@ -157,10 +157,10 @@ pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
             .build();
         header.pack_start(&search);
 
-        let menu = Button::from_icon_name(Some(gtk_icon(&Action::Menu)));
-        let tags = Button::from_icon_name(Some(gtk_icon(&Action::Tags)));
-        let sidebar = Button::from_icon_name(Some(gtk_icon(&Action::Sync)));
-        let find = Button::from_icon_name(Some(gtk_icon(&Action::Look)));
+        let menu = Button::from_icon_name(gtk_icon(&Action::Menu));
+        let tags = Button::from_icon_name(gtk_icon(&Action::Tags));
+        let sidebar = Button::from_icon_name(gtk_icon(&Action::Sync));
+        let find = Button::from_icon_name(gtk_icon(&Action::Look));
 
         header.pack_end(&menu);
         header.pack_end(&sidebar);
@@ -189,13 +189,13 @@ pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
         let header2 = header.clone();
         let title_widget2 = title_widget.clone();
         search.connect_clicked(move |_| {
-            header2.set_title_widget::<gtk4::Widget>(None);
+            header2.set_title_widget(Option::<&gtk4::Widget>::None);
             header2.set_title_widget(Some(&search_bar2));
             // search_bar.set_focus(true);
 
             std::thread::sleep(std::time::Duration::from_millis(500));
 
-            header2.set_title_widget::<gtk4::Widget>(None);
+            header2.set_title_widget(Option::<&gtk4::Widget>::None);
             header2.set_title_widget(Some(&title_widget2));
         });
 
@@ -204,12 +204,12 @@ pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
         let header2 = header.clone();
         let title_widget2 = title_widget.clone();
         ec_focus.connect_leave(move |f| {
-            header2.set_title_widget::<gtk4::Widget>(None);
+            header2.set_title_widget(Option::<&gtk4::Widget>::None);
             header2.set_title_widget(Some(&title_widget2));
         });
         search_bar.add_controller(&ec_focus);
 
-        header.set_title_widget::<gtk4::Widget>(None);
+        header.set_title_widget(Option::<&gtk4::Widget>::None);
         header.set_title_widget(Some(&title_widget));
         header.set_decoration_layout(Some("menu:close"));
 
@@ -224,9 +224,9 @@ pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
             .reveal_child(false)
             .transition_type(gtk4::RevealerTransitionType::SlideDown)
             .build();
-        let restore = Button::from_icon_name(Some(gtk_icon(&Action::Restore)));
+        let restore = Button::from_icon_name(gtk_icon(&Action::Restore));
         header_fullscreen_internal.pack_end(&restore);
-        let menu = Button::from_icon_name(Some(gtk_icon(&Action::Sidebar)));
+        let menu = Button::from_icon_name(gtk_icon(&Action::Sidebar));
         header_fullscreen_internal.pack_end(&menu);
 
         let canvas = GLArea::builder()
