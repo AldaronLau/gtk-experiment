@@ -1,7 +1,8 @@
 // FIXME Test
 use gtk_test::window;
 
-use window::{Window, Loop, Poll, Pending, Ready};
+use window::{Window};
+use pasts::{Join, prelude::*};
 
 struct App {
     window: Window,
@@ -17,7 +18,7 @@ impl App {
             window,
         };
 
-        Loop::new(&mut app).when(|s| &mut s.window, Self::event).await;
+        Join::new(&mut app).on(|s| &mut s.window, Self::event).await;
     }
 }
 

@@ -4,38 +4,33 @@
 //! receives user input events.
 
 use super::{Event, Message};
-use flume::r#async::RecvStream;
-use flume::{Receiver, Sender};
-use futures_util::stream::{StreamExt, StreamFuture};
-use pasts::Loop;
+use pasts::Join;
 use std::task::Poll::{self, Pending};
+use whisk::Channel;
 
 /// Client State
-struct State<'a> {
-    stream: StreamFuture<flume::r#async::RecvStream<'a, Event>>,
+struct State {
+    recver: Channel<Event>,
 }
 
 // Exit type for State.
 type Exit = ();
 
-impl<'a> State<'a> {
+impl State {
     fn event(
         &mut self,
-        (event, stream): (Option<Event>, RecvStream<'a, Event>),
+        event: Event,
     ) -> Poll<Exit> {
-        self.stream = stream.into_future();
         Pending
     }
 }
 
-pub(super) async fn start(sender: Sender<Message>, recver: Receiver<Event>) {
-    let mut state = State {
-        stream: recver.stream().into_future(),
-    };
+pub(super) async fn start(sender: Channel<Message>, recver: Channel<Event>) {
+    let mut state = State { recver };
 
-    Loop::new(&mut state)
-        .when(|s| &mut s.stream, State::event)
+    Join::new(&mut state)
+        .on(|s| &mut s.recver, State::event)
         .await;
 
-    sender.send(Message::Exit).unwrap();
+    sender.send(Message::Exit).await;
 }

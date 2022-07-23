@@ -1,11 +1,11 @@
-use super::{client, Action};
+use super::{Action};
 use gtk4::prelude::*;
 use gtk4::Label;
 use gtk4::{
     Application, ApplicationWindow, Box, Button, EventControllerKey, GLArea,
     HeaderBar, IMContextSimple, InputPurpose, Orientation,
 };
-use flume::{Sender, Receiver};
+use whisk::Channel;
 
 fn gtk_icon(action: &Action) -> &str {
     match action {
@@ -97,7 +97,7 @@ fn gtk_icon(action: &Action) -> &str {
     }
 }
 
-pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
+pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
     let application = Application::builder()
         .application_id("com.aldaronlau.gtk-test")
         .build();

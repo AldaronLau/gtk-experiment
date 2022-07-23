@@ -186,40 +186,28 @@ enum Message {
 }
 
 pub mod window {
-    use std::future::Future;
-    use std::pin::Pin;
-    use std::task::Context;
-    use futures_util::Stream;
-
-    pub use std::task::Poll::{self, Pending, Ready};
-    pub use pasts::Loop;
+    pub use pasts::{prelude::*, Loop};
 
     pub enum Event {
         Test
     }
     
-    impl Drop for Event {
-        fn drop(&mut self) {
-            
-        }
-    }
-
     pub struct Window {
-        sender: flume::Sender<crate::Message>,
-        recver: flume::r#async::RecvStream<'static, crate::Event>,
+        sender: whisk::Channel<crate::Message>,
+        recver: whisk::Channel<crate::Event>,
     }
 
-    impl Future for Window {
-        type Output = Event;
+    impl Notifier for Window {
+        type Event = Event;
 
-        fn poll(
+        fn poll_next(
             mut self: Pin<&mut Self>,
-            cx: &mut Context<'_>,
+            exec: &mut Exec<'_>,
         ) -> Poll<Event> {
-            if let Ready(event) = Pin::new(&mut self.recver).poll_next(cx) {
+            if let Ready(event) = Pin::new(&mut self.recver).poll_next(exec) {
                 // FIXME: Convert event, if sent to kbrd crate, call this
                 // function recursively to get next event.
-                let _ = event.unwrap();
+                let _ = event;
                 Ready(Event::Test)
             } else {
                 Pending
@@ -230,19 +218,23 @@ pub mod window {
     pub fn open<F: 'static>(user_thread: fn(Window) -> F)
         where F: Future<Output = ()>
     {
-        let (tk_sender, recver) = flume::bounded(1);
-        let (sender, tk_recver) = flume::bounded(1);
+        let recver = whisk::Channel::new();
+        let sender = whisk::Channel::new();
+
+        let tk_sender = recver.clone();
+        let tk_recver = sender.clone();
 
         let window_sender = sender.clone();
-        let recver = recver.into_stream();
         
         let mut window = Window {
             sender, recver,
         };
 
         std::thread::spawn(move || {
-            pasts::block_on(user_thread(window));
-            window_sender.send(crate::Message::Exit).unwrap();
+            Executor::default().spawn(Box::pin(async move {
+                user_thread(window);
+                window_sender.send(crate::Message::Exit).await;
+            }));
         });
 
         crate::gtk::main(tk_sender, tk_recver);
