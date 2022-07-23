@@ -17,10 +17,7 @@ struct State {
 type Exit = ();
 
 impl State {
-    fn event(
-        &mut self,
-        event: Event,
-    ) -> Poll<Exit> {
+    fn event(&mut self, event: Event) -> Poll<Exit> {
         Pending
     }
 }

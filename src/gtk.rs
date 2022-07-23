@@ -1,4 +1,4 @@
-use super::{Action};
+use super::Action;
 use gtk4::prelude::*;
 use gtk4::Label;
 use gtk4::{
@@ -97,34 +97,34 @@ fn gtk_icon(action: &Action) -> &str {
     }
 }
 
-        use std::os::raw::c_void;
-        #[allow(unused)]
-        pub const GL_ELEMENT_ARRAY_BUFFER: u32 = 0x8893;
-        #[allow(unused)]
-        pub const GL_ARRAY_BUFFER: u32 = 0x8892;
-        #[allow(unused)]
-        pub const GL_DYNAMIC_DRAW: u32 = 0x88E8;
-        #[allow(unused)]
-        pub type GLuint = u32;
-        #[allow(unused)]
-        pub type GLint = i32;
-        #[allow(unused)]
-        pub type GLenum = u32;
-        #[allow(unused)]
-        pub type GLboolean = u8;
-        #[allow(unused)]
-        pub type GLsizei = i32;
-        #[allow(unused)]
-        pub type GLchar = i8;
-        #[allow(unused)]
-        pub type GLbitfield = u32;
-        #[allow(unused)]
-        pub type GLsizeiptr = isize;
-        #[allow(unused)]
-        pub type GLfloat = f32;
-        #[allow(unused)]
-        pub type GLubyte = u8;
-        #[allow(unused)]
+use std::os::raw::c_void;
+#[allow(unused)]
+pub const GL_ELEMENT_ARRAY_BUFFER: u32 = 0x8893;
+#[allow(unused)]
+pub const GL_ARRAY_BUFFER: u32 = 0x8892;
+#[allow(unused)]
+pub const GL_DYNAMIC_DRAW: u32 = 0x88E8;
+#[allow(unused)]
+pub type GLuint = u32;
+#[allow(unused)]
+pub type GLint = i32;
+#[allow(unused)]
+pub type GLenum = u32;
+#[allow(unused)]
+pub type GLboolean = u8;
+#[allow(unused)]
+pub type GLsizei = i32;
+#[allow(unused)]
+pub type GLchar = i8;
+#[allow(unused)]
+pub type GLbitfield = u32;
+#[allow(unused)]
+pub type GLsizeiptr = isize;
+#[allow(unused)]
+pub type GLfloat = f32;
+#[allow(unused)]
+pub type GLubyte = u8;
+#[allow(unused)]
 pub const GL_FLOAT: u32 = 0x1406;
 #[allow(unused)]
 pub const GL_TEXTURE_2D: u32 = 0x0DE1;
@@ -150,8 +150,20 @@ pub const GL_UNSIGNED_BYTE: u32 = 0x1401;
 extern "system" {
     fn glBindTexture(a: GLenum, b: GLuint) -> ();
     fn glBindBuffer(a: GLenum, b: GLuint) -> ();
-    fn glBufferData(a: GLenum, b: GLsizeiptr, c: *const c_void, d: GLenum) -> ();
-    fn glVertexAttribPointer(a: GLuint, b: GLint, c: GLenum, d: GLboolean, e: GLsizei, f: *const c_void) -> ();
+    fn glBufferData(
+        a: GLenum,
+        b: GLsizeiptr,
+        c: *const c_void,
+        d: GLenum,
+    ) -> ();
+    fn glVertexAttribPointer(
+        a: GLuint,
+        b: GLint,
+        c: GLenum,
+        d: GLboolean,
+        e: GLsizei,
+        f: *const c_void,
+    ) -> ();
 
     fn glDrawArrays(a: GLenum, b: GLint, c: GLsizei) -> ();
     // fn glViewport(a: GLint, b: GLint, c: GLsizei, d: GLsizei) -> ();
@@ -297,14 +309,15 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
             texture: GLuint,
         }
 
-        let state: *mut State = std::boxed::Box::leak(std::boxed::Box::new(State {
-            program: 0,
-            position: -1,
-            texpos: -1,
-            position_buffer: 0,
-            texpos_buffer: 0,
-            texture: 0,
-        }));
+        let state: *mut State =
+            std::boxed::Box::leak(std::boxed::Box::new(State {
+                program: 0,
+                position: -1,
+                texpos: -1,
+                position_buffer: 0,
+                texpos_buffer: 0,
+                texture: 0,
+            }));
 
         canvas.connect_realize(move |canvas| {
             let state = unsafe { &mut *state };
@@ -314,7 +327,12 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
             extern "system" {
 
                 fn glCreateShader(a: GLenum) -> GLuint;
-                fn glShaderSource(a: GLuint, b: GLsizei, c: *const *const GLchar, d: *const GLint) -> ();
+                fn glShaderSource(
+                    a: GLuint,
+                    b: GLsizei,
+                    c: *const *const GLchar,
+                    d: *const GLint,
+                ) -> ();
                 fn glCompileShader(a: GLuint) -> ();
                 fn glCreateProgram() -> GLuint;
                 fn glAttachShader(a: GLuint, b: GLuint) -> ();
@@ -323,7 +341,7 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
                 fn glUseProgram(a: GLuint) -> ();
                 fn glGetAttribLocation(a: GLuint, b: *const GLchar) -> GLint;
                 fn glEnableVertexAttribArray(a: GLuint) -> ();
-                
+
                 fn glGenTextures(a: GLsizei, b: *mut GLuint) -> ();
                 fn glTexParameteri(a: GLenum, b: GLenum, c: GLint) -> ();
                 fn glTexImage2D(
@@ -386,12 +404,14 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
                 glDetachShader(program, f_shader);
                 glUseProgram(program);
                 // Get Vertex Attributes
-                let position = glGetAttribLocation(program, b"position\0".as_ptr().cast());
-                let texpos = glGetAttribLocation(program, b"texpos\0".as_ptr().cast());
+                let position =
+                    glGetAttribLocation(program, b"position\0".as_ptr().cast());
+                let texpos =
+                    glGetAttribLocation(program, b"texpos\0".as_ptr().cast());
                 // Enable Vertex Attributes
                 glEnableVertexAttribArray(position as u32);
                 glEnableVertexAttribArray(texpos as u32);
-                // 
+                //
                 (program, position, texpos)
             };
             // Create canvas texture raster
@@ -400,8 +420,16 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
                 glGenTextures(1, texture.as_mut_ptr());
                 let texture = texture.assume_init();
                 glBindTexture(GL_TEXTURE_2D, texture);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_MAG_FILTER,
+                    GL_NEAREST,
+                );
+                glTexParameteri(
+                    GL_TEXTURE_2D,
+                    GL_TEXTURE_MIN_FILTER,
+                    GL_NEAREST,
+                );
                 let pixels = vec![255u8; 640 * 360 * 4];
                 glTexImage2D(
                     GL_TEXTURE_2D,
@@ -437,7 +465,14 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
                     position_c.as_ptr().cast(),
                     GL_DYNAMIC_DRAW,
                 );
-                glVertexAttribPointer(state.position as GLuint, 2, GL_FLOAT, 0, 0, std::ptr::null());
+                glVertexAttribPointer(
+                    state.position as GLuint,
+                    2,
+                    GL_FLOAT,
+                    0,
+                    0,
+                    std::ptr::null(),
+                );
                 buffer
             };
             // Create Texture Coordinates Buffer
@@ -460,14 +495,21 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
                     texpos_c.as_ptr().cast(),
                     GL_DYNAMIC_DRAW,
                 );
-                glVertexAttribPointer(state.texpos as GLuint, 2, GL_FLOAT, 0, 0, std::ptr::null());
+                glVertexAttribPointer(
+                    state.texpos as GLuint,
+                    2,
+                    GL_FLOAT,
+                    0,
+                    0,
+                    std::ptr::null(),
+                );
                 buffer
             };
         });
 
         canvas.connect_unrealize(move |canvas| {
             let state = unsafe { &mut *state };
-            
+
             extern "system" {
                 fn glDeleteProgram(a: GLuint) -> ();
                 fn glDeleteBuffers(a: GLsizei, b: *const GLuint) -> ();
@@ -476,7 +518,10 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
             unsafe {
                 glDeleteProgram(state.program);
                 glDeleteTextures(1, [state.texture].as_ptr());
-                glDeleteBuffers(2, [state.position_buffer, state.texpos_buffer].as_ptr());
+                glDeleteBuffers(
+                    2,
+                    [state.position_buffer, state.texpos_buffer].as_ptr(),
+                );
             }
         });
 
@@ -498,10 +543,24 @@ pub(super) fn main(send: Channel<crate::Event>, recv: Channel<crate::Message>) {
                 glClear(0x00004000);
                 // Bind position_buffer to position
                 glBindBuffer(GL_ARRAY_BUFFER, state.position_buffer);
-                glVertexAttribPointer(state.position as GLuint, 2, GL_FLOAT, 0, 0, std::ptr::null());
+                glVertexAttribPointer(
+                    state.position as GLuint,
+                    2,
+                    GL_FLOAT,
+                    0,
+                    0,
+                    std::ptr::null(),
+                );
                 // Bind texpos_buffer to texpos
                 glBindBuffer(GL_ARRAY_BUFFER, state.texpos_buffer);
-                glVertexAttribPointer(state.texpos as GLuint, 2, GL_FLOAT, 0, 0, std::ptr::null());
+                glVertexAttribPointer(
+                    state.texpos as GLuint,
+                    2,
+                    GL_FLOAT,
+                    0,
+                    0,
+                    std::ptr::null(),
+                );
                 glBindTexture(GL_TEXTURE_2D, state.texture);
                 glDrawArrays(
                     /* Triangles */ 0x0004 as GLuint,

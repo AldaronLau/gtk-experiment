@@ -189,9 +189,9 @@ pub mod window {
     pub use pasts::{prelude::*, Loop};
 
     pub enum Event {
-        Test
+        Test,
     }
-    
+
     pub struct Window {
         sender: whisk::Channel<crate::Message>,
         recver: whisk::Channel<crate::Event>,
@@ -216,7 +216,8 @@ pub mod window {
     }
 
     pub fn open<F: 'static>(user_thread: fn(Window) -> F)
-        where F: Future<Output = ()>
+    where
+        F: Future<Output = ()>,
     {
         let recver = whisk::Channel::new();
         let sender = whisk::Channel::new();
@@ -225,10 +226,8 @@ pub mod window {
         let tk_recver = sender.clone();
 
         let window_sender = sender.clone();
-        
-        let mut window = Window {
-            sender, recver,
-        };
+
+        let mut window = Window { sender, recver };
 
         std::thread::spawn(move || {
             Executor::default().spawn(Box::pin(async move {
