@@ -98,13 +98,6 @@ fn gtk_icon(action: &Action) -> &str {
 }
 
 pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
-    /*let (send, client_recv) = flume::bounded(1);
-    let (client_send, recv) = flume::bounded(1);
-
-    std::thread::spawn(move || {
-        pasts::block_on(client::start(client_send, client_recv));
-    });*/
-
     let application = Application::builder()
         .application_id("com.aldaronlau.gtk-test")
         .build();
@@ -253,7 +246,7 @@ pub(super) fn main(send: Sender<crate::Event>, recv: Receiver<crate::Message>) {
                 fn glFlush();
             }
             unsafe {
-                glClearColor(0.0, 0.0, 0.0, 1.0); //0.25, 0.25, 0.25, 1.0);
+                glClearColor(0.1, 0.2, 0.3, 1.0);
                 glClear(0x00004000);
                 glFlush();
             }
