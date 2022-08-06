@@ -186,7 +186,7 @@ enum Message {
 }
 
 pub mod window {
-    pub use pasts::{prelude::*, Loop};
+    use pasts::prelude::*;
 
     pub enum Event {
         Test,
@@ -230,10 +230,10 @@ pub mod window {
         let mut window = Window { sender, recver };
 
         std::thread::spawn(move || {
-            Executor::default().spawn(Box::pin(async move {
+            Executor::default().spawn(async move {
                 user_thread(window);
                 window_sender.send(crate::Message::Exit).await;
-            }));
+            });
         });
 
         crate::gtk::main(tk_sender, tk_recver);
