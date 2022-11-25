@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-glib = "0.15"
-gtk4 = "0.4"
+glib = "0.16"
+gtk4 = "0.5"
 pasts = "0.12"
-whisk = { version = "0.5", features = ["pasts"] }
+whisk = { version = "0.9", features = ["pasts"] }
